@@ -2,10 +2,10 @@
 
 [React Native](http://facebook.github.io/react-native/) enables you to build Android applications that look and feel native with only JavaScript. In this instance, React Native takes care of managing UI state and synchronizing it with the models. And luckily for us, we can use [Couchbase Lite](http://developer.couchbase.com/documentation/mobile/1.1.0/get-started/couchbase-lite-overview/index.html) to add sync and persistence to a React Native app. In this tutorial, you will learn how to build a simple application to save documents and replicate them to [Sync Gateway](http://developer.couchbase.com/documentation/mobile/1.1.0/get-started/sync-gateway-overview/index.html). Here are the core concepts you will learn:
 
-- Create a basic project with Couchbase Lite Android and Couchbase Lite Java Listener
-- Integrating React Native in your project
-- Adding Models and UI components with JavaScript
-- Setting up Couchbase Sync Gateway
+1. Create a basic project with Couchbase Lite Android and Couchbase Lite Java Listener
+2. Integrating React Native in your project
+3. Adding Models and UI components with JavaScript
+4. Setting up Couchbase Sync Gateway
 
 Here's a sneak peek of what you are going to build:
 
@@ -611,9 +611,9 @@ Try adding more task documents and notice how they get pushed to Sync Gateway au
 
 Congratulations! You've built your first React Native Android + Couchbase Lite application. You're now ready to add more components such as the following:
 
-- [Couchbase Lite Views](http://developer.couchbase.com/documentation/mobile/1.1.0/develop/guides/couchbase-lite/native-api/view/index.html) to write custom queries
-- [User authentication](http://developer.couchbase.com/documentation/mobile/1.1.0/develop/references/couchbase-lite/rest-api/authentication/index.html) in a replication
-- [Continuously deploying the Sync Gateway configuration file](http://jamiltz.github.io/2015-10-23-continuously-deploy-couchbase-mobile-stack-with-docker-tutum/) and other components
+1. [Couchbase Lite Views](http://developer.couchbase.com/documentation/mobile/1.1.0/develop/guides/couchbase-lite/native-api/view/index.html) to write custom queries
+2. [User authentication](http://developer.couchbase.com/documentation/mobile/1.1.0/develop/references/couchbase-lite/rest-api/authentication/index.html) in a replication
+3. [Continuously deploying the Sync Gateway configuration file](http://jamiltz.github.io/2015-10-23-continuously-deploy-couchbase-mobile-stack-with-docker-tutum/) and other components
 
 Watch out for a tutorial on debugging your React Native Android + Couchbase Lite application using Charles and Genymotion.
 
