@@ -97,8 +97,7 @@ Open **AndroidManifest.xml** located in **app/src/main** and add the permissions
 
 ### The React Native Android Activity
 
-You need to add some native code in order to start the React Native runtime and get it to render something. To do this, we're going to create an Activity that creates a ReactRootView, starts a React application inside it and sets it as the main content view.
-Replace the content of **MainActivity.java** with the following:
+You need to add some native code in order to start the React Native runtime and get it to render something. Replace the content of **MainActivity.java** with the following and we'll explain what is going on next:
 
 ```java
 public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
@@ -138,7 +137,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
             // 2
             allowedCredentials = new Credentials("", "");
 
-            //3
+            // 3
             View.setCompiler(new JavaScriptViewCompiler());
 
             // 4
@@ -223,7 +222,13 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 
 A few things are happening here:
 
-1. 
+1. You create an Activity that creates a `ReactRootView`, starts a React application inside it and sets it as the main content view. Next, you're calling the `initCBLite` method which does a few things.
+2. Here you define an empty name and password to be used by the Listener. This means that in theory, anyone could access your database. This is ok for this tutorial but in production you'd replace the line with `new Credentials()`.
+3. Plug in the component to compile the JavaScript Views. We're not going to use Couchbase Views in this tutorial just yet but it might come in handy.
+4. Instantiate the `Manager` and enable logging.
+5. Start the Couchbase Listener passing in the port to listen on, the manager instance and secure credentials.
+
+That's all for the Android part, now you can turn your attention to JavaScript!  
 
 ## JavaScript Land
 
@@ -254,11 +259,13 @@ Copy & paste the following code to a new **index.android.js** file in your root 
 'use strict';
 
 var React = require('react-native');
+var Home = require('./app/components/Home');
 var {
   AppRegistry,
   StyleSheet,
   Text,
-  View
+  View,
+  ToolbarAndroid
 } = React;
 
 
@@ -266,19 +273,29 @@ var styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#111111'
+  },
+  toolbar: {
+    backgroundColor: '#e9eaed',
+    height: 56,
   }
 });
 
 
-var CBL4RNTodoDemoAndroid = React.createClass({
+var TodoLite = React.createClass({
   render: function() {
     return (
-      <Text>Hello World!</Text>
+      <View style={styles.container}>
+        <ToolbarAndroid
+          title="TodoLite ReactNative Android"
+          style={styles.toolbar}>
+        </ToolbarAndroid>
+        <Home/>
+      </View>
     );
   }
 });
 
-AppRegistry.registerComponent('CBL4RNTodoDemoAndroid', () => CBL4RNTodoDemoAndroid);
+AppRegistry.registerComponent('TodoLite-ReactNative-Android', () => TodoLite);
 ```
 
 ## Build and Run!
@@ -305,7 +322,7 @@ Well done on getting the development environment up and running! React Native in
 
 ## A Todo Application
 
-### Developing the Models
+### A Simple API
 
 Create a new file **app/utils/api.js** and add the following:
 
@@ -374,7 +391,7 @@ Here is what you're doing:
 1. You declare the endpoint the Couchbase Listener is running on.
 2. The remote database is Sync Gateway in this case. This would be replaced with your Sync Gateway production instance.
 3. The method to persist a task document.
-4. Here, you're fetch all the documents from Couchbase Lite.
+4. Here, you're getting all the documents from Couchbase Lite.
 5. Start a push replication from the Couchbase Lite database to Sync Gateway. There could equally be a pull replication as well.
 
 With a basic API in place, you can now turn your attention to building the UI.
@@ -538,6 +555,8 @@ Home.propTypes = {
 module.exports = Home;
 ```
 
+Don't get intimidated by the length of this code snippet. All we're doing here is declaring styles and using some built-in React Native UI components  to display a text input, buttons and text labels. You can find the list of built-in UI components [here](https://facebook.github.io/react-native/docs/native-components-android.html#content).
+
 ### Updating the Root Component
 
 The final step before you can see your great work in action is to update **index.android.js** to load the **Home** component. Below the `require` statement to import `react-native`, add the following:
@@ -546,7 +565,7 @@ The final step before you can see your great work in action is to update **index
 var Home = require('./app/components/Home');
 ```
 
-Next, replace the return value of the `render` method with `<Home/>`. Use the `⌘ + m` shortcut in Genymotion to reload the JavaScript and you'll sould see a bright blue screen. That's good news!
+Next, replace the return value of the `render` method with `<Home/>`. Use the `⌘ + m` shortcut in Genymotion to reload the JavaScript and you should see a bright blue screen. That's good news!
 
 ![](assets/demo-ui.png)
 
