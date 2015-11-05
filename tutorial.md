@@ -43,7 +43,7 @@ Click **Finish** and you should see the following in the project navigator:
 
 ### Bundling dependencies
 
-Expand the app folder, and then open the **build.gradle** file. If the **build.gradle** does not contain an android section, then you are looking at the wrong one. Make sure you open the one in the **todolite-reactnative-android** folder (and not the one at the project level). Add the following lines to the **android** section:
+Expand the app folder, and then open the **build.gradle** file. Make sure you open the one located in the **app** folder (also called the module) and add the following in the **android** section:
 
 ```
 // workaround for "duplicate files during packaging of APK" issue
@@ -55,7 +55,7 @@ packagingOptions {
 }
 ```
 
-Expand the project folder, and then open the **build.gradle** file. Add the following lines to the **buildscript** section, it section should look similar to this:
+Next, open **build.gradle** at the root (also refererred to as the project level gradle file) and add a reference to the Couchbase Maven repository:
 
 ```
 allprojects {
@@ -68,7 +68,7 @@ allprojects {
 }
 ```
 
-Next, add the following lines to the top-level **dependencies** section:
+Now, add the following lines to the top-level **dependencies** section:
 
 ```
 dependencies {
@@ -116,6 +116,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 
         Log.d(TAG, "onCreate method called");
 
+        // 1
         mReactRootView = new ReactRootView(this);
         mReactInstanceManager = ReactInstanceManager.builder()
                 .setApplication(getApplication())
@@ -130,71 +131,53 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
         setContentView(mReactRootView);
         initCBLite();
     }
-    
-    private void initCBLite() {
-            try {
 
-                allowedCredentials = new Credentials("","");
-    
-                URLStreamHandlerFactory.registerSelfIgnoreError();
-    
-                View.setCompiler(new JavaScriptViewCompiler());
-    
-                Manager server = startCBLite(new AndroidContext(this));
-    
-                listenPort = startCBLListener(DEFAULT_LISTEN_PORT, server, allowedCredentials);
-    
-                Log.i(TAG, "initCBLite() completed successfully with: " + String.format(
-                        "http://%s:%s@localhost:%d/",
-                        allowedCredentials.getLogin(),
-                        allowedCredentials.getPassword(),
-                        listenPort));
-    
-                CBL_URL = String.format(
-                        "http://%s:%s@localhost:%d/",
-                        allowedCredentials.getLogin(),
-                        allowedCredentials.getPassword(),
-                        listenPort);
-    
-    
-            } catch (final Exception e) {
-                e.printStackTrace();
-                initFailed = true;
-            }
-    
+    private void initCBLite() {
+        try {
+
+            // 2
+            allowedCredentials = new Credentials("", "");
+
+            //3
+            View.setCompiler(new JavaScriptViewCompiler());
+
+            // 4
+            AndroidContext context = new AndroidContext(this);
+            Manager.enableLogging(Log.TAG, Log.VERBOSE);
+            Manager.enableLogging(Log.TAG_SYNC, Log.VERBOSE);
+            Manager.enableLogging(Log.TAG_QUERY, Log.VERBOSE);
+            Manager.enableLogging(Log.TAG_VIEW, Log.VERBOSE);
+            Manager.enableLogging(Log.TAG_CHANGE_TRACKER, Log.VERBOSE);
+            Manager.enableLogging(Log.TAG_BLOB_STORE, Log.VERBOSE);
+            Manager.enableLogging(Log.TAG_DATABASE, Log.VERBOSE);
+            Manager.enableLogging(Log.TAG_LISTENER, Log.VERBOSE);
+            Manager.enableLogging(Log.TAG_MULTI_STREAM_WRITER, Log.VERBOSE);
+            Manager.enableLogging(Log.TAG_REMOTE_REQUEST, Log.VERBOSE);
+            Manager.enableLogging(Log.TAG_ROUTER, Log.VERBOSE);
+            Manager manager = new Manager(context, Manager.DEFAULT_OPTIONS);
+
+            // 5
+            listenPort = startCBLListener(DEFAULT_LISTEN_PORT, manager, allowedCredentials);
+
+            Log.i(TAG, "initCBLite() completed successfully with: " + String.format(
+                    "http://%s:%s@localhost:%d/",
+                    allowedCredentials.getLogin(),
+                    allowedCredentials.getPassword(),
+                    listenPort));
+
+        } catch (final Exception e) {
+            e.printStackTrace();
         }
-    
-        protected Manager startCBLite(AndroidContext context) {
-            Manager manager;
-            try {
-                Manager.enableLogging(Log.TAG, Log.VERBOSE);
-                Manager.enableLogging(Log.TAG_SYNC, Log.VERBOSE);
-                Manager.enableLogging(Log.TAG_QUERY, Log.VERBOSE);
-                Manager.enableLogging(Log.TAG_VIEW, Log.VERBOSE);
-                Manager.enableLogging(Log.TAG_CHANGE_TRACKER, Log.VERBOSE);
-                Manager.enableLogging(Log.TAG_BLOB_STORE, Log.VERBOSE);
-                Manager.enableLogging(Log.TAG_DATABASE, Log.VERBOSE);
-                Manager.enableLogging(Log.TAG_LISTENER, Log.VERBOSE);
-                Manager.enableLogging(Log.TAG_MULTI_STREAM_WRITER, Log.VERBOSE);
-                Manager.enableLogging(Log.TAG_REMOTE_REQUEST, Log.VERBOSE);
-                Manager.enableLogging(Log.TAG_ROUTER, Log.VERBOSE);
-                manager = new Manager(context, Manager.DEFAULT_OPTIONS);
-    
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            return manager;
-        }
-    
-        private int startCBLListener(int listenPort, Manager manager, Credentials allowedCredentials) {
-    
-            LiteListener listener = new LiteListener(manager, listenPort, allowedCredentials);
-            int boundPort = listener.getListenPort();
-            Thread thread = new Thread(listener);
-            thread.start();
-            return boundPort;
-    
-        }
+
+    }
+
+    private int startCBLListener(int listenPort, Manager manager, Credentials allowedCredentials) {
+        LiteListener listener = new LiteListener(manager, listenPort, allowedCredentials);
+        int boundPort = listener.getListenPort();
+        Thread thread = new Thread(listener);
+        thread.start();
+        return boundPort;
+    }
 
     @Override
     protected void onPause() {
@@ -238,9 +221,9 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 }
 ```
 
-Here's a what's happening here:
+A few things are happening here:
 
-// todo
+1. 
 
 ## JavaScript Land
 
@@ -253,9 +236,7 @@ $ curl -o .flowconfig https://raw.githubusercontent.com/facebook/react-native/ma
 ```
 
 This creates a node module for your app and adds the react-native npm dependency.
-Note: name should not be contain capital letters.
-      If you are first install react-native,may be you should use sudo to install react-native.
-Now open the newly created **package.json** file and add this line inside `scripts`:
+Now open the newly created **package.json** file and add this line inside of the `scripts` field:
 
 ```
 "start": "node_modules/react-native/packager/packager.sh"
@@ -402,7 +383,7 @@ With a basic API in place, you can now turn your attention to building the UI.
 
 Create a new file in **app/components/Home.js** with the following:
 
-```
+```js
 var React = require('react-native');
 var api = require('./../utils/api');
 
