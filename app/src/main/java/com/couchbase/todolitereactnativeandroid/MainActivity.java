@@ -1,7 +1,6 @@
 package com.couchbase.todolitereactnativeandroid;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.KeyEvent;
 
@@ -11,22 +10,19 @@ import com.couchbase.lite.android.AndroidContext;
 import com.couchbase.lite.javascript.JavaScriptViewCompiler;
 import com.couchbase.lite.listener.Credentials;
 import com.couchbase.lite.listener.LiteListener;
-import com.couchbase.lite.router.URLStreamHandlerFactory;
 import com.couchbase.lite.util.Log;
 import com.facebook.react.LifecycleState;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactRootView;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
-import com.facebook.react.shell.MainReactPackage;
-
-import java.io.IOException;
 
 public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
     private ReactRootView mReactRootView;
     private ReactInstanceManager mReactInstanceManager;
 
-    private final String TAG = "TodoLite";
+    public static final String TAG = "TodoLite";
     private static final int DEFAULT_LISTEN_PORT = 5984;
+    private String mListenerURL = "";
     private int listenPort;
     private Credentials allowedCredentials;
 
@@ -36,54 +32,53 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 
         Log.d(TAG, "onCreate method called");
 
+        initCBLite();
+
         // 1
         mReactRootView = new ReactRootView(this);
         mReactInstanceManager = ReactInstanceManager.builder()
                 .setApplication(getApplication())
                 .setBundleAssetName("index.android.bundle")
                 .setJSMainModuleName("index.android")
-                .addPackage(new MainReactPackage())
+                .addPackage(new CBLReactPackage(this, mListenerURL))
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
                 .setInitialLifecycleState(LifecycleState.RESUMED)
                 .build();
         mReactRootView.startReactApplication(mReactInstanceManager, "TodoLite-ReactNative-Android", null);
 
         setContentView(mReactRootView);
-        initCBLite();
+
     }
 
     private void initCBLite() {
         try {
 
             // 2
-            allowedCredentials = new Credentials("", "");
+            allowedCredentials = new Credentials();
 
             //3
             View.setCompiler(new JavaScriptViewCompiler());
 
             // 4
             AndroidContext context = new AndroidContext(this);
-            Manager.enableLogging(Log.TAG, Log.VERBOSE);
-            Manager.enableLogging(Log.TAG_SYNC, Log.VERBOSE);
-            Manager.enableLogging(Log.TAG_QUERY, Log.VERBOSE);
-            Manager.enableLogging(Log.TAG_VIEW, Log.VERBOSE);
-            Manager.enableLogging(Log.TAG_CHANGE_TRACKER, Log.VERBOSE);
-            Manager.enableLogging(Log.TAG_BLOB_STORE, Log.VERBOSE);
-            Manager.enableLogging(Log.TAG_DATABASE, Log.VERBOSE);
-            Manager.enableLogging(Log.TAG_LISTENER, Log.VERBOSE);
-            Manager.enableLogging(Log.TAG_MULTI_STREAM_WRITER, Log.VERBOSE);
-            Manager.enableLogging(Log.TAG_REMOTE_REQUEST, Log.VERBOSE);
-            Manager.enableLogging(Log.TAG_ROUTER, Log.VERBOSE);
+            Manager.enableLogging(com.couchbase.lite.util.Log.TAG, com.couchbase.lite.util.Log.VERBOSE);
+            Manager.enableLogging(com.couchbase.lite.util.Log.TAG_SYNC, com.couchbase.lite.util.Log.VERBOSE);
+            Manager.enableLogging(com.couchbase.lite.util.Log.TAG_QUERY, com.couchbase.lite.util.Log.VERBOSE);
+            Manager.enableLogging(com.couchbase.lite.util.Log.TAG_VIEW, com.couchbase.lite.util.Log.VERBOSE);
+            Manager.enableLogging(com.couchbase.lite.util.Log.TAG_CHANGE_TRACKER, com.couchbase.lite.util.Log.VERBOSE);
+            Manager.enableLogging(com.couchbase.lite.util.Log.TAG_BLOB_STORE, com.couchbase.lite.util.Log.VERBOSE);
+            Manager.enableLogging(com.couchbase.lite.util.Log.TAG_DATABASE, com.couchbase.lite.util.Log.VERBOSE);
+            Manager.enableLogging(com.couchbase.lite.util.Log.TAG_LISTENER, com.couchbase.lite.util.Log.VERBOSE);
+            Manager.enableLogging(com.couchbase.lite.util.Log.TAG_MULTI_STREAM_WRITER, com.couchbase.lite.util.Log.VERBOSE);
+            Manager.enableLogging(com.couchbase.lite.util.Log.TAG_REMOTE_REQUEST, com.couchbase.lite.util.Log.VERBOSE);
+            Manager.enableLogging(com.couchbase.lite.util.Log.TAG_ROUTER, com.couchbase.lite.util.Log.VERBOSE);
             Manager manager = new Manager(context, Manager.DEFAULT_OPTIONS);
 
             // 5
             listenPort = startCBLListener(DEFAULT_LISTEN_PORT, manager, allowedCredentials);
 
-            Log.i(TAG, "initCBLite() completed successfully with: " + String.format(
-                    "http://%s:%s@localhost:%d/",
-                    allowedCredentials.getLogin(),
-                    allowedCredentials.getPassword(),
-                    listenPort));
+            mListenerURL = String.format("http://%s:%s@localhost:%d/", allowedCredentials.getLogin(),
+                    allowedCredentials.getPassword(), listenPort);
 
         } catch (final Exception e) {
             e.printStackTrace();

@@ -1,3 +1,13 @@
+var CBLModule = require('CBLModule');
+
+CBLModule.getUrl((err) => {
+  console.log('Callback error :: ' + err);
+}, (msg) => {
+  console.log(msg);
+  api.localDatabaseUrl = msg;
+});
+
+
 var api = {
   
   // 1
