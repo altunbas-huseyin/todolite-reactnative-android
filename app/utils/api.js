@@ -4,7 +4,7 @@ var api = {
   localDatabaseUrl: 'http://localhost:5984',
   
   // 2
-  remoteDatabaseUrl: 'http://localhost:4984',
+  remoteDatabaseUrl: 'http://10.0.3.2:4984',
  
   // 3
   saveTodo(title){
